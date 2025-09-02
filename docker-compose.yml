@@ -1,14 +1,12 @@
-version: "3.8"
-
 services:
   react-app:
     build: .
-    container_name: react-app
+    container_name: interajai-react
     restart: always
+    ports:
+      - "8080:80"
     networks:
       - web
-    expose:
-      - "80"
 
 networks:
   web:
