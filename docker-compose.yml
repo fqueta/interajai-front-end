@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  react-app:
+    build: .
+    container_name: react-app
+    restart: always
+    networks:
+      - web
+    expose:
+      - "80"
+
+networks:
+  web:
+    external: true
