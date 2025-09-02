@@ -3,8 +3,6 @@ services:
     build: .
     container_name: interajai-react
     restart: always
-    ports:
-      - "8080:80"
     networks:
       - web
 
