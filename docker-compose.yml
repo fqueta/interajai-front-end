@@ -1,13 +1,11 @@
 services:
   interajai-react:
-    build: .
     container_name: interajai-react
-    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    restart: unless-stopped
     networks:
       - web
-    expose:
-      - "80"
-
-networks:
-  web:
-    external: true
