@@ -6,7 +6,7 @@ export function getTenantIdFromSubdomain(): string | null {
 
 export function getTenantApiUrl(): string {
   // Derive tenant API URL from VITE_API_URL by removing 'api-' prefix
-  const baseUrl : string = import.meta.env.VITE_TENANT_API_URL || 'http://maisaqui1.localhost:8000/api/v1';
+  const baseUrl : string = import.meta.env.VITE_TENANT_API_URL || 'https://api-{tenant_id}.ctloja.com.br/api';
   const tenant_id = getTenantIdFromSubdomain() || 'default';
   const ret = baseUrl.replace('{tenant_id}', tenant_id);
   return ret;
