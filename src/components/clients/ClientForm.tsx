@@ -1,7 +1,6 @@
 import { format } from 'date-fns';
 import InputMask from "react-input-mask-next";
 import { CalendarIcon } from 'lucide-react';
-import { AddressInputs } from '@/components/lib/AddressInputs';
 import {
   Form,
   FormControl,
@@ -28,7 +27,7 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
-// import { MaskedInputField } from '@/components/lib/MaskedInputField';
+import { MaskedInputField } from '@/components/lib/MaskedInputField';
 interface ClientFormProps {
   form: any;
   onSubmit: (data: any) => void;
@@ -128,31 +127,31 @@ export function ClientForm({
           />
 
           {form.watch('tipo_pessoa') === 'pf' ? (
-            <FormField
-              control={form.control}
-              name="config.cpf"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CPF</FormLabel>
-                  <FormControl>
-                    <Input placeholder="CPF" {...field} value={field.value || ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <MaskedInputField
+                name="cpf"
+                control={form.control}
+                label="CPF"
+                mask="999.999.999-99"
+                placeholder="000.000.000-00"
             />
-            ) : (
+          ) : (
             <>
-              
+              <MaskedInputField
+                name="cnpj"
+                control={form.control}
+                label="CNPJ"
+                mask="99.999.999/9999-99"
+                placeholder="00.000.000/0000-00"
+              />
               <FormField
                 control={form.control}
-                name="cnpj"
+                name="razao"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CNPJ</FormLabel>
-                      <FormControl>
-                          <Input placeholder="CNPJ" {...field} value={field.value || ''} />
-                      </FormControl>
+                    <FormLabel>Razão Social</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Razão Social" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -204,7 +203,28 @@ export function ClientForm({
                     </FormItem>
                   )}
                 />
-                               
+                <MaskedInputField
+                  name="config.celular"
+                  control={form.control}
+                  label="Telefone"
+                  mask="(99) 99999-9999"
+                  placeholder="(00) 00000-0000"
+                />
+                <MaskedInputField
+                  name="config.telefone_residencial"
+                  control={form.control}
+                  label="Telefone"
+                  mask="(99) 99999-9999"
+                  placeholder="(00) 00000-0000"
+                />
+                <MaskedInputField
+                  name="config.telefone_comercial"
+                  control={form.control}
+                  label="Telefone"
+                  mask="(99) 99999-9999"
+                  placeholder="(00) 00000-0000"
+                />
+                
                 {form.watch('tipo_pessoa') === 'pf' && (
                   <>
                     <FormField
@@ -220,50 +240,42 @@ export function ClientForm({
                         </FormItem>
                       )}
                     />
-                    
                     <FormField
                       control={form.control}
                       name="config.nascimento"
                       render={({ field }) => (
-                        // <FormItem className="flex flex-col">
-                        //   <FormLabel>Data de Nascimento</FormLabel>
-                        //   <div className="relative">
-                        //     <FormControl>
-                        //       <Input
-                        //         placeholder="DD/MM/AAAA"
-                        //         value={field.value ? format(new Date(field.value), 'dd/MM/yyyy') : ''}
-                        //         onChange={() => {}}
-                        //         onClick={() => document.getElementById('calendar-popup')?.click()}
-                        //         className="w-full"
-                        //       />
-                        //     </FormControl>
-                        //     <div className="absolute right-2 top-2">
-                        //       <Button
-                        //         type="button"
-                        //         variant="ghost"
-                        //         className="h-6 w-6 p-0"
-                        //         id="calendar-popup"
-                        //       >
-                        //         <CalendarIcon className="h-4 w-4" />
-                        //       </Button>
-                        //     </div>
-                        //   </div>
-                        //   <div className="mt-2">
-                        //     <Calendar
-                        //       mode="single"
-                        //       selected={field.value ? new Date(field.value) : undefined}
-                        //       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
-                        //       disabled={(date) => date > new Date()}
-                        //       initialFocus
-                        //     />
-                        //   </div>
-                        //   <FormMessage />
-                        // </FormItem>
-                        <FormItem>
+                        <FormItem className="flex flex-col">
                           <FormLabel>Data de Nascimento</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
+                          <div className="relative">
+                            <FormControl>
+                              <Input
+                                placeholder="DD/MM/AAAA"
+                                value={field.value ? format(new Date(field.value), 'dd/MM/yyyy') : ''}
+                                onChange={() => {}}
+                                onClick={() => document.getElementById('calendar-popup')?.click()}
+                                className="w-full"
+                              />
+                            </FormControl>
+                            <div className="absolute right-2 top-2">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="h-6 w-6 p-0"
+                                id="calendar-popup"
+                              >
+                                <CalendarIcon className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            <Calendar
+                              mode="single"
+                              selected={field.value ? new Date(field.value) : undefined}
+                              onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                              disabled={(date) => date > new Date()}
+                              initialFocus
+                            />
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -317,7 +329,7 @@ export function ClientForm({
           <AccordionItem value="item-2">
             <AccordionTrigger>Endereço</AccordionTrigger>
             <AccordionContent>
-              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 
                 <MaskedInputField 
                   name="config.cpf"
@@ -440,8 +452,7 @@ export function ClientForm({
                     </FormItem>
                   )}
                 />
-              </div> */}
-              <AddressInputs form={form} />
+              </div>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="item-3">

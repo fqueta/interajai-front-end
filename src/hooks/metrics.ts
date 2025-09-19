@@ -94,3 +94,15 @@ export function useDeleteMetric() {
     },
   });
 }
+// export function CamposForm() {
+//   const arr = [
+//     { name: "investment", label: "Investimento", type: "number" },
+//     { name: "visitors", label: "Visitantes", type: "number" },
+//     { name: "bot_conversations", label: "Bot", type: "number" },
+//     { name: "human_conversations", label: "Humanos", type: "number" },
+//     { name: "proposals", label: "Propostas", type: "number" },
+//     { name: "closed_deals", label: "Fechados", type: "number" }
+//   ];
+//   console.log('CamposForm',arr);
+//   return arr;
+// }

@@ -1,13 +1,14 @@
 import { useState,useCallback } from 'react';
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, Download, ChevronDown } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { dataParaBR,getInicioFimMes } from '@/lib/qlib';
+import { dataParaBR,getApiUrl } from '@/lib/qlib';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PeriodSelector } from '@/components/metrics/PeriodSelector';
+import ImportButton from '@/components/metrics/ImportButton';
 import { 
   Table, 
   TableBody, 
@@ -42,15 +43,17 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-
 import { 
   useMetricsList, 
   useCreateMetric, 
   useUpdateMetric,
-  useDeleteMetric 
+  useDeleteMetric,
 } from '@/hooks/metrics';
 import { MetricRecord, CreateMetricInput, MetricList } from '@/types/metrics';
 import { metricsService } from '@/services/metricsService';
+import { createGenericService } from '@/services/GenericApiService';
+
+// Componente do botão importar
 // Schema de validação
 const metricSchema = z.object({
   period: z.string().min(1, "Período é obrigatório"), // yyyy-mm-dd
@@ -84,18 +87,17 @@ export default function Metrics() {
   const title1:string = "Métricas";
   const title2:string = "Gerencie as "+title1+" do sistema";
   const label1:string = 'Buscar '+title1+'...';
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  // console.log(metricsData);
-  
-  // useEffect(() => {
-  //   // alert('search: ' + search + ', page: ' + page);
-  //   // const { data: metricsData, isLoading, error } = useMetricsList({
-  //   //   year: new Date().getFullYear(),
-  //   //   // search: search,
-  //   //   // page,
-  //   // });
-  // }, [search, page]); // Para garantir que o efeito seja executado quando search ou page mudarem
+  const API_BASE_URL = getApiUrl();
+  type CamposFormType = {name:string,label:string,type:string};
+  const arrCampos:CamposFormType[] = [
+    { name: "investment", label: "Investimento", type: "number" },
+    { name: "visitors", label: "Visitantes", type: "number" },
+    { name: "bot_conversations", label: "Bot", type: "number" },
+    { name: "human_conversations", label: "Humanos", type: "number" },
+    { name: "proposals", label: "Propostas", type: "number" },
+    { name: "closed_deals", label: "Fechados", type: "number" }
+  ];
+ 
   const createMutation = useCreateMetric();
   const updateMutation = useUpdateMetric();
   const deleteMutation = useDeleteMetric();
@@ -125,7 +127,7 @@ export default function Metrics() {
   // });
   const [metrics,setMetrics] = useState<MetricRecord[]>([]);
   const year: number = new Date().getFullYear();
-  const currentMonthNumber: number = new Date().getMonth() + 1;
+  // const currentMonthNumber: number = new Date().getMonth() + 1;
   const [totalPages , setTotalPages] = useState<number>(0);
   const [inicio, setInicio] = useState<string | Date>('');
   const [fim, setFim] = useState<string | Date>('');
@@ -135,12 +137,8 @@ export default function Metrics() {
       end_date: typeof fim === 'string' ? fim : fim.toISOString().split('T')[0]
       }).then((res) => {
         const resAny = res as any;
-        // const totalMetrics = resAny?.totais_filtrados || [];
-        // const totalTends = resAny?.agregados?.visitas?.por_semana || [];
-        // const totalTendsConv = resAny?.agregados?.conversas?.por_semana || [];
-      // console.log(res);
-      const totalPages = resAny?.last_page || 1;
-      const registros = resAny?.registros ?? resAny?.data ?? [];
+        const totalPages = resAny?.last_page || 1;
+        const registros = resAny?.registros ?? resAny?.data ?? [];
       // console.log(`registros:`,registros);      
       setMetrics(registros);
       setTotalPages(totalPages);      
@@ -211,6 +209,38 @@ export default function Metrics() {
       }
     }
   };
+
+  const handleImport = async (tipo: string) => {
+    
+    try {
+      setIsLoading(true);
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      
+      const body = {
+        ano: currentYear,
+        // numero: currentMonth,
+        tipo: selectedPeriod,
+        inicio: inicio,
+        fim: fim,
+      };
+      // console.log('inicio',inicio);
+      // console.log('fim',fim);
+      // console.log('body',body);
+      
+      const metricsService = createGenericService('/dashboard-metrics/import-aeroclube');
+      const response = await metricsService.create(body);
+      
+      // Recarregar os dados após importação
+      consult({type: selectedPeriod, value: selectedPeriod, inicio: inicio, fim: fim});
+      console.log('Importação realizada com sucesso:', response);
+    } catch (error) {
+      console.error('Erro ao importar dados:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   if (isLoading) {
     return (
@@ -255,18 +285,28 @@ export default function Metrics() {
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{title1}</h1>
-          <p className="text-muted-foreground">
+    <div className="container mx-auto py-4 md:py-6 space-y-4 md:space-y-6 px-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold">{title1}</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Gerencie as {title1} das campanhas de marketing
           </p>
         </div>
-        <Button onClick={() => handleOpenModal()}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova {title}
-        </Button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button onClick={() => handleOpenModal()} className="flex-1 sm:flex-none">
+            <Plus className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">Nova {title}</span>
+            <span className="sm:hidden">Nova {title}</span>
+          </Button>
+          
+          <ImportButton 
+            onImport={handleImport}
+            inicio={inicio}
+            fim={fim}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
 
       <Card>
@@ -307,52 +347,56 @@ export default function Metrics() {
             </div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Período</TableHead>
-                    <TableHead>Investimento</TableHead>
-                    <TableHead>Visitantes</TableHead>
-                    <TableHead>Bot</TableHead>
-                    <TableHead>Humanos</TableHead>
-                    <TableHead>Propostas</TableHead>
-                    <TableHead>Fechados</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {metrics.map((metric) => (
-                    <TableRow key={metric.id}>
-                      <TableCell>{dataParaBR(String(metric.period))}</TableCell>
-                      <TableCell>R$ {metric.investment}</TableCell>
-                      <TableCell>{metric.visitors}</TableCell>
-                      <TableCell>{metric.bot_conversations}</TableCell>
-                      <TableCell>{metric.human_conversations}</TableCell>
-                      <TableCell>{metric.proposals}</TableCell>
-                      <TableCell>{metric.closed_deals}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(metric)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeletingMetric(metric)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table className="min-w-[600px] sm:min-w-[700px] lg:min-w-[800px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[80px] sm:min-w-[100px] text-xs sm:text-sm">Período</TableHead>
+                      <TableHead className="min-w-[90px] sm:min-w-[120px] text-xs sm:text-sm">Investimento</TableHead>
+                      <TableHead className="min-w-[80px] sm:min-w-[100px] text-xs sm:text-sm">Visitantes</TableHead>
+                      <TableHead className="min-w-[60px] sm:min-w-[80px] hidden md:table-cell text-xs sm:text-sm">Bot</TableHead>
+                      <TableHead className="min-w-[60px] sm:min-w-[80px] hidden lg:table-cell text-xs sm:text-sm">Humanos</TableHead>
+                      <TableHead className="min-w-[80px] sm:min-w-[100px] text-xs sm:text-sm">Propostas</TableHead>
+                      <TableHead className="min-w-[80px] sm:min-w-[100px] text-xs sm:text-sm">Fechados</TableHead>
+                      <TableHead className="text-right min-w-[70px] sm:min-w-[100px] text-xs sm:text-sm">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {metrics.map((metric) => (
+                      <TableRow key={metric.id}>
+                        <TableCell className="font-medium text-xs sm:text-sm">{dataParaBR(String(metric.period))}</TableCell>
+                        <TableCell className="font-semibold text-green-600 text-xs sm:text-sm">R$ {metric.investment}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{metric.visitors}</TableCell>
+                        <TableCell className="hidden md:table-cell text-xs sm:text-sm">{metric.bot_conversations}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs sm:text-sm">{metric.human_conversations}</TableCell>
+                        <TableCell className="text-xs sm:text-sm">{metric.proposals}</TableCell>
+                        <TableCell className="font-semibold text-blue-600 text-xs sm:text-sm">{metric.closed_deals}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end space-x-1">
+                            <Button variant="ghost" size="sm" onClick={() => handleOpenModal(metric)}>
+                              <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setDeletingMetric(metric)}>
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4">
-                  <p className="text-sm text-muted-foreground">Página {page} de {totalPages}</p>
-                  <div className="flex space-x-2">
+                <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-2">
+                  <p className="text-sm text-muted-foreground order-2 sm:order-1">Página {page} de {totalPages}</p>
+                  <div className="flex space-x-2 order-1 sm:order-2">
                     <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>
-                      Anterior
+                      <span className="hidden sm:inline">Anterior</span>
+                      <span className="sm:hidden">Ant</span>
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, page + 1))} disabled={page === totalPages}>
-                      Próxima
+                      <span className="hidden sm:inline">Próxima</span>
+                      <span className="sm:hidden">Prox</span>
                     </Button>
                   </div>
                 </div>
@@ -364,7 +408,7 @@ export default function Metrics() {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
-        <DialogContent className="sm:max-w-md overflow-y-auto">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4">
           <DialogHeader>
             <DialogTitle>
               {editingMetric ? 'Editar '+title+'' : 'Nova '+title+''}
@@ -386,14 +430,7 @@ export default function Metrics() {
                   <FormMessage />
                 </FormItem>
               )}/>
-              {[
-                { name: "investment", label: "Investimento", type: "number" },
-                { name: "visitors", label: "Visitantes", type: "number" },
-                { name: "bot_conversations", label: "Bot", type: "number" },
-                { name: "human_conversations", label: "Humanos", type: "number" },
-                { name: "proposals", label: "Propostas", type: "number" },
-                { name: "closed_deals", label: "Fechados", type: "number" }
-              ].map(({ name, label, type }) => (
+              {arrCampos.map(({ name, label, type }) => (
                 <FormField key={name} control={form.control} name={name as keyof MetricFormData} render={({ field }) => (
                   <FormItem>
                     <FormLabel>{label}</FormLabel>

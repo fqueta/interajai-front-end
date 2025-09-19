@@ -60,7 +60,7 @@ export interface ServiceObject {
   // Especificações comuns
   manufacturer?: string;
   model?: string;
-  year?: number;
+  year?: number | string;
   color?: string;
   notes?: string;
   active?: boolean;
@@ -293,3 +293,7 @@ export interface ServiceOrderFormData {
     unit_price: number;
   }[];
 }
+
+// Export product types
+export * from './products';
+export * from './serviceOrders';

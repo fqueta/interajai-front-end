@@ -6,7 +6,7 @@ export function getTenantIdFromSubdomain(): string | null {
 
 export function getTenantApiUrl(): string {
   // Derive tenant API URL from VITE_API_URL by removing 'api-' prefix
-  const baseUrl : string = import.meta.env.VITE_TENANT_API_URL || 'https://api-{tenant_id}.ctloja.com.br/api';
+  const baseUrl : string = import.meta.env.VITE_TENANT_API_URL || 'http://maisaqui1.localhost:8000/api/v1';
   const tenant_id = getTenantIdFromSubdomain() || 'default';
   const ret = baseUrl.replace('{tenant_id}', tenant_id);
   return ret;
@@ -18,6 +18,9 @@ export function getVersionApi(): string {
 // Capitaliza a primeira letra de cada palavra (similar ao ucwords do PHP)
 export function ucwords(str: string): string {
   return str.replace(/\b\w/g, c => c.toUpperCase());
+}
+export function getApiUrl(): string {
+  return getTenantApiUrl()+''+getVersionApi() || 'http://{tenant_id}.localhost:8000/api/v1';
 }
 // Converte data do formato 'YYYY-MM-DD' para 'DD/MM/YYYY' (padrão brasileiro)
 export function dataParaBR(dataISO: string): string {
