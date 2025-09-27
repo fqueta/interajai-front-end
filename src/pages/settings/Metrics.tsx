@@ -90,6 +90,7 @@ export default function Metrics() {
   const API_BASE_URL = getApiUrl();
   type CamposFormType = {name:string,label:string,type:string};
   const arrCampos:CamposFormType[] = [
+    { name: "campaign_id", label: "Origem", type: "text" },
     { name: "investment", label: "Investimento", type: "number" },
     { name: "visitors", label: "Visitantes", type: "number" },
     { name: "bot_conversations", label: "Bot", type: "number" },
