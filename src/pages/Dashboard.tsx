@@ -29,12 +29,12 @@ const Dashboard2 = () => {
     value: number;
   }
   const [kpiData, setKpiData] = useState<kpiData>({
-    investment: 26000,
-    visitors: 11350,
-    botConversations: 1852,
-    humanConversations: 463,
-    proposals: 185,
-    closedDeals: 45
+    investment: 0,
+    visitors: 0,
+    botConversations: 0,
+    humanConversations: 0,
+    proposals: 0,
+    closedDeals: 0
   });
 
   // Adicionar estado para variações
@@ -46,17 +46,17 @@ const Dashboard2 = () => {
     transferRateVariation: -3.2
   });
   const [trendData,setDataTrend] = useState<trendData[]>([
-    { period: "Sem 1", value: 8200 },
-    { period: "Sem 2", value: 9500 },
-    { period: "Sem 3", value: 11200 },
-    { period: "Sem 4", value: 12350 }
+    { period: "Sem 1", value: 0 },
+    { period: "Sem 2", value: 0 },
+    { period: "Sem 3", value: 0 },
+    { period: "Sem 4", value: 0 }
   ]);
  
   const [conversationTrend,setConverTrend] = useState<trendData[]>([
-    { period: "Sem 1", value: 1420 },
-    { period: "Sem 2", value: 1680 },
-    { period: "Sem 3", value: 1950 },
-    { period: "Sem 4", value: 2315 }
+    { period: "Sem 1", value: 0 },
+    { period: "Sem 2", value: 0 },
+    { period: "Sem 3", value: 0 },
+    { period: "Sem 4", value: 0 }
   ]);
   const consult = ({ type, value, inicio, fim }) => {
     setSelectedPeriod(type);
@@ -90,10 +90,10 @@ const Dashboard2 = () => {
       if (totalMetrics) {
         const investment = totalMetrics.total_investment??'0,00';
         const visitors = totalMetrics.total_visitors??0;
-        const total_bot_conversations = totalMetrics.total_bot_conversations??'0,00';
-        const total_human_conversations = totalMetrics.total_human_conversations??'0,00';
-        const proposals = totalMetrics.total_proposals??'0,00';
-        const total_closed_deals = totalMetrics.total_closed_deals??'0,00';
+        const total_bot_conversations = totalMetrics.total_bot_conversations??'0';
+        const total_human_conversations = totalMetrics.total_human_conversations??'0';
+        const proposals = totalMetrics.total_proposals??'0';
+        const total_closed_deals = totalMetrics.total_closed_deals??'0';
         // console.log(investment);        
         setKpiData({
           investment: investment,
